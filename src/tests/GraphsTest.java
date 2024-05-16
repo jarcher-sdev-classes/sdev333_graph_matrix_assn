@@ -4,7 +4,7 @@ import graphs.Edge;
 import graphs.IGraph;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import structures.DirectedGraph;
+import solution.DirectedGraph;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,7 +36,7 @@ public class GraphsTest
     public void setup()
     {
         //instantiate the DirectedGraph class here...
-        graph = null;
+        graph = new DirectedGraph<>();
     }
 
     private void addFewVertices()
@@ -283,14 +283,54 @@ public class GraphsTest
         }
 
         //make sure we can't add an invalid weight
-        assertThrows(IllegalAccessException.class,
+        assertThrows(IllegalArgumentException.class,
                 () -> graph.addEdge("A", "B", -DEFAULT_WEIGHT));
+        assertThrows(IllegalArgumentException.class,
+                () -> graph.addEdge("A", "B", 0));
     }
 
+    /**
+     * Verify that positive edge weights can be added to the
+     * graph.
+     */
     @Test
     public void weightTest()
     {
+        addFewVertices();
 
+        //this is a valid edge weight
+        assertDoesNotThrow(() -> graph.addEdge("A", "B", 1));
+    }
+
+    /**
+     * The vertices() method should not return a reference
+     * to an internal data structure (breaking encapsulation...)
+     */
+    @Test
+    public void verticesReferenceTest()
+    {
+        addFewVertices();
+
+        Set<String> verts1 = graph.vertices();
+        Set<String> verts2 = graph.vertices();
+
+        assertNotSame(verts1, verts2);
+    }
+
+    /**
+     * The edges() method should not return a reference
+     * to an internal data structure (breaking encapsulation...)
+     */
+    @Test
+    public void edgesReferenceTest()
+    {
+        addFewVertices();
+        addFewEdges(TEST_WEIGHT);
+
+        Set<Edge<String>> edges1 = graph.edges();
+        Set<Edge<String>> edges2 = graph.edges();
+
+        assertNotSame(edges1, edges2);
     }
 
     /**
