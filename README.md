@@ -1,8 +1,13 @@
+<img src="assn-imgs/gm_1.jpg" width="500">
+
 # Individual Assignment: Graph Matrix
 
 ## Overview
 
-In this assignment, we will explore one of the popular ways to store graph data in an application. You will be using 2D arrays in Java to write an adjacency matrix with all the basic operations of data structures we have seen in our past topics.
+In this assignment, we will explore one of the common ways to store graph data in an application. 
+Using a two-dimensional array, we store the edges in a graph. This is a good choice for dense graphs.
+
+
 
 ## Objectives
 
@@ -18,92 +23,132 @@ Here is what we'd like you take out of this assignment.
 
 ## Getting Started
 
-You have been provided with a start project, please download here: [project files](https://egator.greenriver.edu/courses/2466854/files/245548005/download?wrap=1)
-
-Download project files. Take a quick look at the interfaces and classes that have been provided for you:
+You have been provided with starter files in your project. Take a moment to review 
+the interfaces and classes:
 - `IGraph` - an interface describing the basic behavior of a graph.
 - `Edge` - a simple class that stores a pair of vertices that form an edge and the weight of that edge.
-- `Bijection` - A two-way map structure where keys & values are stored and a key or value can be provided to find a pair in the map.
+- `Bijection` - A two-way map structure where keys & values are stored and a key or value can be provided 
+  to find a pair in the map.
     - Note: This means that both your keys are unique and your values are unique.
-    - Note: This type of structure is often called a one-to-one correspondence in mathematics.
-- `GraphsTest` - A file with unit tests to verify the behavior of your class. You will need to un-comment the line of code in the setup() method once you have begun to write your class.
+    - Note: This type of structure is called a one-to-one correspondence in mathematics.
+- `GraphsTest` - A file with unit tests to verify the behavior of your class.
 
 ## Adjacency Matrix
 
-Your task is to write a graph structure that is based upon a matrix, as described in class. To implement such a structure in Java will require you to manage a two-dimensional array, storing rows and columns in the array defined by their indices.
+Your task is to write a graph structure that is based upon a matrix, as described in class. 
+To implement such a structure in Java will require you to manage a two-dimensional array.
 
-Notice how elements are arranged in rows and columns, where if there is an edge in the graph. To declare a grid of elements as a two-dimensional array in Java you write a statement like the following:
+<img src="assn-imgs/gm_6.png" width="250">&nbsp;&nbsp;&nbsp;
+<img src="assn-imgs/gm_7.png" width="250">
+
+To declare a grid of elements as a two-dimensional array in Java you write a statement like the
+following:
 
 ```java
 int[][] matrix = new int[rows][columns];
 ```
 
-## The Graph You Build Should Also Have the Following Properties:
+You should also notice that there is a mapping of vertices to indices in the diagram:
+
+- A -> 0
+- C -> 2
+- D -> 3
+- ...
+
+We can use these mapped indices to place an edge in the graph, which is represented by a 
+non-zero value. For example, if we want to add edge (C, D) to the graph, we would use
+the mapping to find the corresponding indices in the graph and update the array. For
+example:
+
+```java
+//add an edge with weight 1
+matrix[2][3] = 1;
+```
+
+## Graph Properties
+
+To create a general class for a type of graph requires us to identify the properties
+of that type of graph. For this assignment our graph will have the following properties:
 
 - The graph is directed.
-- The graph is a weighted graph, where edge weights replace the value one in the matrix above. Negative edge weights are not supported, and a missing edge is stored as -1.
+- The graph is a weighted graph, where edge weights replace the value one in the matrix above. 
+- Non-positive edge weights are not supported, and a missing edge is stored as 0.
 
 ## The IGraph Interface
 
-The expected operations of your class are defined in the IGraph interface. I have included the Javadoc descriptions of each method below:
+The expected operations of your class are defined in the `IGraph` interface. When implementing
+the class, you should directly follow the Javadoc descriptions that are provided.
 
-| Operation | Description |
-|-----------|-------------|
-| `boolean addVertex(V vertex)` | Adds a new vertex to the graph. If the vertex already exists, then no change is made to the graph. |
-| `boolean addEdge(V source, V destination, int weight)` | Adds a new edge to the graph. If the edge already exists, then no change is made to the graph. Edges are considered to be directed. |
-| `int vertexSize()` | Returns the number of vertices in the graph. |
-| `int edgeSize()` | Returns the number of edges in the graph. |
-| `boolean containsVertex(V vertex)` | Reports whether a vertex is in the graph or not. |
-| `boolean containsEdge(V source, V destination)` | Reports whether an edge is in the graph or not. |
-| `int edgeWeight(V source, V destination)` | Returns the edge weight of an edge in the graph. |
-| `Set<V> vertices()` | Returns a set with all vertices in the graph. The set returned shares no references with any internal structures used by the DirectedGraph class. |
-| `Set<Edge<V>> edges()` | Returns a set with all edges in the graph. The set returned shares no references with any internal structures used by the DirectedGraph class. |
-| `boolean removeVertex(V vertex)` | Removes a vertex from the graph. |
-| `boolean removeEdge(V source, V destination)` | Removes an edge from the graph. |
-| `void clear()` | Removes all vertices and edges from the graph. |
+<img src="assn-imgs/gm_9.png" width="450">
 
 ## Managing Indices
 
-It can be particularly challenging to assign new vertex elements to indices in your two-dimensional array. Recall that any object can be assigned as a vertex in a graph. Vertices could be colors, cars, nations, cities, etc., depending on the graph. Your program will need to maintain mapping from vertices to indices. For example, given the insertion of color-vertices in the following order - pink, magenta, blue, green - your program could assign indices in insertion order:
+It can be particularly challenging to assign new vertices to the graph using the 
+two-dimensional array. Vertices could be colors, cars, nations, cities, etc., 
+depending on the graph. You will need to maintain a mapping from vertices to indices
+For example, given the insertion of color-vertices in the following order - 
+`pink, magenta, blue, green` - your program could assign indices in insertion order:
 
-![Adjacency Matrix 2](adjacency_matrix_2.png)
+<img src="assn-imgs/gm_2.png" width="300">
 
-Notice how a new element would be assigned index 5, then 6, and so on. This works well, but what if we ended up deleting a vertex? For example, deleting blue from the graph above:
+Notice how a new element would be assigned index 5, then 6, and so on. This works well, but 
+what if we ended up deleting a vertex? For example, deleting blue from the graph above:
 
-![Adjacency Matrix 3](adjacency_matrix_3.png)
+<img src="assn-imgs/gm_3.png" width="300">
 
-Notice how we have an empty space in our graph. We should not leave unused space in the graph. So we should reassign indices from deleted elements as needed. This can be challenging to accomplish if we pick the wrong data structure. The goal is for the data structure to provide previously used indices if available (to reuse them) or the next available index.
+Notice how we have an empty space in our graph. We should not leave this as unused space in the graph. 
+Instead, we should reassign indices from deleted elements as necessary. This can be challenging to 
+accomplish if we pick the wrong data structure. 
 
-A stack can be used to solve this problem. Use the following steps to provide indices for new vertices:
+A stack can be used to solve this problem. With the following steps:
 
-- The stack should initially store just the first index (0).
-- When a request is made to add a new vertex to the graph, pull the top number off the stack. This is the index of your new vertex.
-  - If the stack is now empty, then increment the last index pulled from the stack and add this number back onto the stack.
-  - If the stack is not empty, then do nothing. There is an index still available for all new vertices added to the graph.
+- The stack should initially store the index 0.
+- When a request is made to insert a new vertex to the graph, pull the top number off the stack. 
+  This is the index of the new vertex.
+  - If the stack is now empty, increment the last index pulled from the stack and add this 
+    value back onto the stack.
+  - If the stack is not empty, do nothing. There is an index still available for the next 
+    vertex added to the graph.
 
 ## Using the Bijection
 
-I have provided a two-way map for you to store your vertex - index pairs. This look-up table will be needed for most of the methods you will write. Sometimes you will need to use a vertex to look up an index in the matrix. Other times you will do the opposite, using an index to find a vertex that belongs to a position. Below is an example of how we can use this look-up table:
+To help map vertices to indices, your instructor has provided the code for a two-way map. This 
+structure will be necessary for most of the methods you will write. In certain cases you will need to 
+use a vertex to identify the corresponding index in the matrix. In other cases you will do the opposite, 
+using an index to find the corresponding vertex. 
 
-![Bijection](bijection.png)
+<img src="assn-imgs/gm_8.png" width="500">
 
-The Bijection class allows you to search by key or value in constant time (at the cost of some extra space). Take a moment and familiarize yourself with the class. You are required to use this as part of your solution. Your code is required to provide O(1) look up time when identifying the index of a vertex (or the opposite, a vertex at an index). Use the Bijection class to accomplish this.
+**Note:** The Bijection class allows you to search by key or value in constant time (at the cost of 
+some extra space). You should take a moment and familiarize yourself with the code for the class. 
+Your code is required to provide O(1) look up time when identifying the index of a vertex 
+(or the opposite, a vertex at an index).
 
 ## Making Room for More Elements
 
-Your graph should continuously grow to accommodate more vertices. If addVertex() is invoked on a matrix with no more row/columns for a new vertex, then the matrix should be replaced with a larger matrix.
+Your graph should continuously grow to accommodate more vertices. If addVertex() is invoked 
+on a matrix with no more row/columns for a new vertex, then the matrix should be replaced 
+with a larger matrix.
 
-![Adjacency Matrix 4](adjacency_matrix_4.png)
+<img src="assn-imgs/gm_4.png" width="300">
 
-You should be conservative with how quickly you allow your matrix to grow, as you are using space. My suggestion is to use a 50% growth factor. Once you have created a larger two-dimensional array, copy all elements from the previous array to the new array.
+Given the size of the internal array, you should be conservative with how quickly you 
+allow it to grow. A growth factor should be provided in your
+program in the 30-50% range. 
 
 ## Verifying Your Work
 
-I have provided a set of unit tests to verify the behavior of your class. It will be beneficial to observe how I have written the tests, as guidance when writing your graph methods.
+Your instructor has provided a set of unit tests to verify the behavior of your class. 
+It will be beneficial to observe how I have written the tests, as guidance when writing 
+your graph methods.
 
 ## Requirements
 
-Any submissions ignoring the following requirements will be forced to resubmit their work:
+The following are hard-requirements for the assignment. Any submissions ignoring these 
+rules will be required to resubmit their work:
 - Your graph must be directed, weighted, and use an adjacency matrix.
 - Your class must use a two-dimensional array to store elements in the matrix.
-- You should not be storing any Edge objects in the fields in your class. This includes lists, sets, or maps that store Edge objects. The only place an Edge object should be created is within your edges() method.
+- You should not be storing any Edge objects in the fields in your class. This includes lists, sets, 
+  or maps that store Edge objects. 
+  - **Note:** The only place an Edge object should be created is within 
+    your edges() method.
