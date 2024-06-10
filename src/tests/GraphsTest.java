@@ -491,6 +491,10 @@ public class GraphsTest
         assertEquals(0, graph.edgeSize());
     }
 
+    /**
+     * Verifies that both ends of an edge are removed when
+     * a vertex is removed (both rows and cols in the matrix).
+     */
     @Test
     public void removeVertexDirectedTest()
     {
