@@ -7,8 +7,6 @@
 In this assignment, we will explore one of the common ways to store graph data in an application. 
 Using a two-dimensional array, we store the edges in a graph. This is a good choice for dense graphs.
 
-
-
 ## Objectives
 
 Here is what we'd like you take out of this assignment.

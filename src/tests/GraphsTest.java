@@ -4,11 +4,11 @@ import graphs.Edge;
 import graphs.IGraph;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import solution.DirectedGraph;
+import example.DirectedGraph;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,13 +49,26 @@ public class GraphsTest
 
     private void addFewEdges(int weight)
     {
-        //add link between letters that are adjacent (A-B, B-C, ... , J-K, K-L)
+        List<Edge<String>> edges = getTestEdges(weight);
+        for (Edge<String> edge : edges)
+        {
+            graph.addEdge(edge.getSource(), edge.getDestination(), edge.getWeight());
+        }
+    }
+
+    private List<Edge<String>> getTestEdges(int weight)
+    {
+        List<Edge<String>> edges = new ArrayList<>();
+
+        //add edges between letters that are adjacent (A-B, B-C, ... , J-K, K-L)
         for (int i = 0; i < testVerts.length - 1; i++)
         {
             String source = testVerts[i];
             String destination = testVerts[i + 1];
-            graph.addEdge(source, destination, weight);
+            edges.add(new Edge<>(source, destination, weight));
         }
+
+        return edges;
     }
 
     /**
@@ -145,6 +158,7 @@ public class GraphsTest
         addFewEdges(DEFAULT_WEIGHT);
 
         int sizeBefore = graph.vertexSize();
+        assertNotEquals(0, sizeBefore);
 
         //add the duplicate and verify that the graph hasn't changed
         assertFalse(graph.addEdge(testVerts[0], testVerts[1], DEFAULT_WEIGHT));
@@ -160,6 +174,7 @@ public class GraphsTest
     public void missingVertexTest()
     {
         addFewVertices();
+        assertEquals(testVerts.length, graph.vertexSize());
 
         //verify no false positives
         assertFalse(graph.containsVertex("M"));
@@ -173,6 +188,9 @@ public class GraphsTest
     {
         addFewVertices();
         addFewEdges(DEFAULT_WEIGHT);
+
+        assertEquals(testVerts.length, graph.vertexSize());
+        assertEquals(getTestEdges(DEFAULT_WEIGHT).size(), graph.edgeSize());
 
         //verify no false positives (both of these edges should not be in graph)
         assertFalse(graph.containsEdge("A", "A"));
@@ -264,6 +282,47 @@ public class GraphsTest
     }
 
     /**
+     * Verifies that edges are not returned with null
+     * values in the edge set.
+     */
+    @Test
+    public void edgesNotNullTest()
+    {
+        addFewVertices();
+        addFewEdges(DEFAULT_WEIGHT);
+
+        Set<Edge<String>> edges = graph.edges();
+        for (Edge<String> edge : edges)
+        {
+            assertNotNull(edge.getSource());
+            assertNotNull(edge.getDestination());
+        }
+    }
+
+    /**
+     * Verifies that edges are not returned with null
+     * values after being removed from the graph
+     * @param vertex the vertex to remove
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"A", "B", "C", "D", "E", "F", "G", "H",
+            "I", "J", "K"})
+    public void edgesNotNullAfterRemoveTest(String vertex)
+    {
+        addFewVertices();
+        addFewEdges(DEFAULT_WEIGHT);
+
+        assertTrue(graph.removeVertex(vertex));
+
+        Set<Edge<String>> edges = graph.edges();
+        for (Edge<String> edge : edges)
+        {
+            assertNotNull(edge.getSource());
+            assertNotNull(edge.getDestination());
+        }
+    }
+
+    /**
      * Tests whether edges weights passed to Graph.addEdge() are stored with
      * the correct weights.
      */
@@ -297,6 +356,8 @@ public class GraphsTest
     public void weightTest()
     {
         addFewVertices();
+
+        assertEquals(testVerts.length, graph.vertexSize());
 
         //this is a valid edge weight
         assertDoesNotThrow(() -> graph.addEdge("A", "B", 1));
@@ -334,31 +395,136 @@ public class GraphsTest
     }
 
     /**
-     * Verifies that vertices can reliably be removed from the graph.
+     * Verifies that missing vertices cannot be removed from the graph.
      */
     @Test
-    public void removeVertexTest()
+    public void removeMissingVertexTest()
+    {
+        addFewVertices();
+        addFewEdges(DEFAULT_WEIGHT);
+        assertEquals(testVerts.length, graph.vertexSize());
+        assertEquals(getTestEdges(DEFAULT_WEIGHT).size(), graph.edgeSize());
+
+        //make sure you cannot remove missing vertex elements
+        assertFalse(graph.removeVertex("M"));
+    }
+
+    /**
+     * Verifies that vertices can reliably be removed from the graph.
+     *
+     * @param vertex the vertex to remove
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"A", "B", "C", "D", "E", "F", "G", "H",
+                            "I", "J", "K"})
+    public void removeVertexTest(String vertex)
     {
         addFewVertices();
         addFewEdges(DEFAULT_WEIGHT);
 
-        //make sure you cannot remove missing vertex elements
-        assertFalse(graph.removeVertex("M"));
+        //make sure you can remove vertices in graph
+        assertTrue(graph.removeVertex(vertex));
+
+        //verify related edges are gone
+        List<Edge<String>> edges = getTestEdges(DEFAULT_WEIGHT);
+        for (Edge<String> edge : edges)
+        {
+            if (edge.getDestination().equals(vertex) || edge.getSource().equals(vertex))
+            {
+                assertFalse(graph.containsEdge(edge.getSource(), edge.getDestination()));
+                assertFalse(graph.containsEdge(edge.getDestination(), edge.getSource()));
+            }
+        }
+
+        assertEquals(testVerts.length - 1, graph.vertexSize());
+    }
+
+    /**
+     * Verifies that edges are removed when a vertex is removed from the graph.
+     * @param vertex the vertex to remove
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"A", "B", "C", "D", "E", "F", "G", "H",
+            "I", "J", "K"})
+    public void edgesGoneAfterRemoveTest(String vertex)
+    {
+        addFewVertices();
+        addFewEdges(DEFAULT_WEIGHT);
 
         //make sure you can remove vertices in graph
-        assertTrue(graph.removeVertex("L"));
+        assertTrue(graph.removeVertex(vertex));
 
-        //remove all vertices in the graph
-        Set<String> vertices = graph.vertices();
-        assertEquals(testVerts.length - 1, vertices.size());
+        Set<Edge<String>> edges = graph.edges();
+        for (Edge<String> edge : edges)
+        {
+            assertNotEquals(edge.getSource(), vertex);
+            assertNotEquals(edge.getDestination(), vertex);
+        }
+
         assertEquals(testVerts.length - 1, graph.vertexSize());
+    }
 
-        for (String vertex : vertices)
+    /**
+     * Verifies that all vertices (and related edges) can
+     * be removed from the graph.
+     */
+    @Test
+    public void removeAllVerticesTest()
+    {
+        addFewVertices();
+        addFewEdges(DEFAULT_WEIGHT);
+
+        //remove each vertex one by one
+        for (String vertex : testVerts)
         {
             assertTrue(graph.removeVertex(vertex));
         }
 
+        //no edges should be left
+        for (Edge<String> edge : getTestEdges(DEFAULT_WEIGHT))
+        {
+            assertFalse(graph.containsEdge(edge.getSource(), edge.getDestination()));
+        }
+
+        //there should no longer be elements in the graph
         assertEquals(0, graph.vertexSize());
+        assertEquals(0, graph.edgeSize());
+    }
+
+    @Test
+    public void removeVertexDirectedTest()
+    {
+        addFewVertices();
+
+        //add a few edges
+        List<Edge<String>> testEdges = List.of(
+            new Edge<>("A", "B", DEFAULT_WEIGHT),
+            new Edge<>("A", "C", DEFAULT_WEIGHT),
+            new Edge<>("A", "D", DEFAULT_WEIGHT),
+            new Edge<>("B", "A", DEFAULT_WEIGHT),
+            new Edge<>("C", "A", DEFAULT_WEIGHT),
+            new Edge<>("E", "A", DEFAULT_WEIGHT)
+        );
+
+        for (Edge<String> edge : testEdges)
+        {
+            graph.addEdge(edge.getSource(), edge.getDestination(), edge.getWeight());
+        }
+
+        //remove a vertex
+        assertTrue(graph.removeVertex("A"));
+
+        //verify that the edge is gone
+        for (Edge<String> edge : testEdges)
+        {
+            assertFalse(graph.containsEdge(edge.getSource(), edge.getDestination()));
+        }
+
+        Set<Edge<String>> edgesInGraph = graph.edges();
+        for (Edge<String> edge : testEdges)
+        {
+            assertFalse(edgesInGraph.contains(edge));
+        }
     }
 
     /**
