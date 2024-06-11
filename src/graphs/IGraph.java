@@ -34,6 +34,7 @@ public interface IGraph<V>
      *               if the weight is negative
      * @return true if the edge was added, otherwise false
      * @throws IllegalArgumentException when given a non-positive edge weight
+     * @throws IllegalArgumentException when given a source or destination vertex that does not exist
      */
     boolean addEdge(V source, V destination, int weight);
 

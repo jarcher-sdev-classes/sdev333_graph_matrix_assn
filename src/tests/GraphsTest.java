@@ -4,7 +4,7 @@ import graphs.Edge;
 import graphs.IGraph;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import example.DirectedGraph;
+import structures.DirectedGraph;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -128,9 +128,7 @@ public class GraphsTest
     }
 
     /**
-     * Checks whether adding an edge with a vertex not in the map is recognized
-     * by the return type of the addEdge() method. (i.e. the method should return
-     * true when the edge is added and false otherwise)
+     * Checks whether adding an edge with a vertex not in the map throws an error
      */
     @Test
     public void addEdgeWithoutVertexTest()
@@ -142,9 +140,9 @@ public class GraphsTest
         assertTrue(graph.addEdge(testVerts[0], testVerts[testVerts.length - 1], DEFAULT_WEIGHT));
 
         //add edges with missing vertices
-        assertFalse(graph.addEdge(testVerts[0], "M", DEFAULT_WEIGHT));
-        assertFalse(graph.addEdge("M", testVerts[0], DEFAULT_WEIGHT));
-        assertFalse(graph.addEdge("P", "M", DEFAULT_WEIGHT));
+        assertThrows(IllegalArgumentException.class, () -> graph.addEdge(testVerts[0], "M", DEFAULT_WEIGHT));
+        assertThrows(IllegalArgumentException.class, () -> graph.addEdge("M", testVerts[0], DEFAULT_WEIGHT));
+        assertThrows(IllegalArgumentException.class, () -> graph.addEdge("P", "M", DEFAULT_WEIGHT));
     }
 
     /**
@@ -178,6 +176,16 @@ public class GraphsTest
 
         //verify no false positives
         assertFalse(graph.containsVertex("M"));
+    }
+
+    @Test
+    public void containsEdgeMissingVertexTest()
+    {
+        addFewVertices();
+        addFewEdges(DEFAULT_WEIGHT);
+
+        //M and N are not in the graph
+        assertFalse(graph.containsEdge("M", "N"));
     }
 
     /**
